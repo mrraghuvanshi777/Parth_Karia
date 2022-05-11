@@ -1,0 +1,72 @@
+from datetime import timedelta
+from bs4 import BeautifulSoup
+import datetime as dt
+import requests
+from tkinter import *
+import pandas as pd
+import matplotlib.pyplot as plt
+from requests.api import request
+
+class data:
+    def __init__(self):
+        self.information=[]
+        self.infor=[]
+        self.vac=[]
+        r=requests.get("https://www.worldometers.info/coronavirus/country/india/?msclkid=e465bbd9c84611ecb502c7d1a45fb787")
+        r1=requests.get("https://en.wikipedia.org/wiki/COVID-19_vaccination_in_India?msclkid=5b065846d14411ec97a921b37608fed6")
+        soup1=BeautifulSoup(r1.content,'html5lib')
+        soup=BeautifulSoup(r.content,'html5lib')
+        print(soup.title)
+        self.month=['jan','feb','march','april','may','june','july','aug','sep','oct','nov','dec']
+        self.mdata=[10.747019,11.112056,12.148487,18.754984,28.173655,30.410577,31.612786,32.810892,33.765744,32.772766,34.596776,34.861579]
+        info=soup.find_all('div',class_="maincounter-number")
+        vacc=soup1.find_all('span',class_="nowrap")
+        for j in vacc:
+            self.vac.append(j.get_text())
+        for i in info:
+            self.information.append(i.get_text().strip('\n'))
+            self.infor.append(i.get_text().replace(',',"").strip('\n'))
+        print(self.information)            
+class gui(data):
+    def __init__(self):
+        d=data()
+        death=d.information[1]
+        total=d.information[0]
+        c=(int(d.infor[1])*100)/int(d.infor[0])#deathratio
+        e=(int(d.infor[2])*100)/int(d.infor[0])#recovered rartio
+        win=Tk()
+        mode=IntVar()
+        win.geometry("1000x700")
+        print(c)
+        t1=win.title('Corona Virus Effects In India')
+        l1=Label(win,text="Corona Total Cases In India: ",font="ac 25").pack(padx=10,pady=20)
+        l11=Label(win,text=total,foreground="blue",font="ac 30").pack()
+        l2=Label(win,text="Corona Death Ratio In India: ",font="ac 25").pack(padx=10,pady=20)
+        l22=Label(win,text=death,font="ac 30",foreground="red").pack()
+        l3=Label(win,text="Recovered From Corona In India ",font="ac 25").pack(padx=10,pady=20)
+        l33=Label(win,text=d.information[2],font="ac 30",foreground="green").pack()
+        def submit():
+            if mode.get()==1:
+                win.configure(background="white")
+            else:
+                win.configure(background="black")
+        def next():    
+            ax=plt.subplot()
+            plt.pie(d.infor,labels=["Total Cases","Death ","Recovered"])
+            plt.show()
+        def prev():
+            #plt.bar(d.month)
+            plt.plot(d.month,d.mdata)
+            plt.title("Corona Cases In 2021 (Values In Milion)")                       
+            plt.show()
+        def ana():
+            Label(win,text=d.vac[2],font="ac 45",foreground="yellow").pack()
+
+        rb=Radiobutton(win,text="Light Mode",variable=mode,value=1,command=submit).pack(side=BOTTOM)
+        rb1=Radiobutton(win,text="Dark Mode",variable=mode,value=2,command=submit).pack(side=BOTTOM)
+        b1=Button(win,text="Show Chart",command=next,height=2,width=30,background="orange").pack(padx=20,pady=10)
+        b1=Button(win,text="2021 Corona Chart ",command=prev,height=2,width=30,background="orange").pack(padx=10,pady=10)
+        b1=Button(win,text="Vaccinated in India",command=ana,height=2,width=30,background="orange").pack(padx=10,pady=10)#place(x=500,y=500)
+        win.mainloop()
+g=gui()
+
